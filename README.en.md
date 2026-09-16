@@ -42,13 +42,24 @@ python3 -m bailing context --root ../my-individual --runtime hermes
 
 Edit the new workspace's GENESIS.md to define your own individual's identity and boundaries. Give the context output to your chosen AI as user-approved reference material. Runtime labels identify the reader; they do not invoke or configure products. New workspaces are created outside the public source tree and ignore all contents in Git by default.
 
+## New in v0.2: finding history
+
+Read-only archive search with runtime, inclusive date, and session filters. Results include source paths and line numbers. It only reads Markdown you explicitly place in your private workspace; there is no account discovery or automatic import.
+
+```bash
+python3 -m bailing archive-search "reading" --root examples/fictional
+python3 -m bailing archive-search "reading" --root examples/fictional --runtime hermes --since 2026-01-02 --json
+```
+
+Store files under `memory/archive/` (subdirectories allowed), named `YYYY-MM-DD-runtime-session.md`. Use `### user · timestamp` and `### assistant · timestamp` headings for message boundaries. Existing v0.1 workspaces only need this optional directory; do not reinitialize them. Invalid/unreadable files and symlinks are reported as skipped. JSON includes full matching blocks; inspect output before sharing. Lexical relevance is not current truth. See [format and limitations](docs/ARCHIVE.md).
+
 ## What is implemented
 
 Initialization, file validation, deterministic context assembly, factual journal append, and source-preserving lexical retrieval (`prepare`). A fictional reading-session example is in `examples/fictional`; see [the demo](docs/DEMO.md).
 
 ## Limits
 
-Experimental v0.1.0. No autonomous memory extraction, account access, model calls, background jobs, or enforcement of identity governance. Task checkpoints must be updated explicitly. Software tests do not establish model compliance or successful model-to-model continuity. No real-model behavioral evaluation of this public edition has been completed. Context size is not automatically limited; use a single writer. Retrieval relevance is not truth, and `prepare` does not search journals.
+Experimental v0.2.0. No autonomous memory extraction, account access, model calls, background jobs, or enforcement of identity governance. Task checkpoints must be updated explicitly. Software tests do not establish model compliance or successful model-to-model continuity. No real-model behavioral evaluation of this public edition has been completed. Context size is not automatically limited; use a single writer. Retrieval relevance is not truth, and `prepare` does not search journals.
 
 ## Join the exploration
 

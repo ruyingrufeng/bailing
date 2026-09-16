@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import sys
 from .retrieval import prepare, read_local
+from .archive import search as archive_search, render as render_archive
 
 TEMPLATE = Path(__file__).resolve().parents[1] / "templates" / "individual"
 REQUIRED = ("GENESIS.md", "core/CONSTITUTION.md", "state/STATE.md",
@@ -49,6 +50,15 @@ def main():
             cmd.add_argument("query")
         if command == "record":
             cmd.add_argument("summary")
+    archive = sub.add_parser("archive-search", help="Search user-supplied Markdown archives (read-only)")
+    archive.add_argument("query")
+    archive.add_argument("--root", type=Path, required=True)
+    archive.add_argument("--runtime", help="Exact runtime name from filename")
+    archive.add_argument("--since")
+    archive.add_argument("--until")
+    archive.add_argument("--session", help="Substring of session identifier")
+    archive.add_argument("--limit", type=int, default=8)
+    archive.add_argument("--json", action="store_true")
     args = p.parse_args()
     try:
         if args.command == "init":
@@ -66,7 +76,10 @@ def main():
             return
         root = args.root.resolve()
         validate(root)
-        if args.command == "doctor":
+        if args.command == "archive-search":
+            result = archive_search(args.query, root, args.limit, args.runtime, args.since, args.until, args.session)
+            print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else render_archive(result))
+        elif args.command == "doctor":
             print("OK: required files readable; this does not test model behavior.")
         elif args.command == "context":
             print(context(root, args.runtime))

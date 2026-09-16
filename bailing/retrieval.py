@@ -51,6 +51,10 @@ def retrieve(query, root=ROOT, limit=5, category="all"):
         for line, body in chunks(path, root):
             tokens = terms(body)
             docs.append((path, line, body, tokens))
+    return rank(docs, query, root, limit)
+
+
+def rank(docs, query, root, limit):
     query_terms = terms(query)
     if not query_terms or not docs:
         return []
