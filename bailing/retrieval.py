@@ -75,7 +75,9 @@ def rank(docs, query, root, limit):
     return sorted(ranked, key=lambda d: (-d["score"], d["path"], d["line"]))[:limit]
 
 
-def prepare(query, root=ROOT, budget=14000):
+def prepare(query, root=ROOT, budget=14000, max_block=6000):
+    if budget < 1 or max_block < 1:
+        raise ValueError("Budget and maximum block size must be positive")
     # Critical rules are loaded whole, never silently dropped to fit a budget.
     rules = read_local(root / "state/BEHAVIOR_RULES.md", root)
     header = ("# 行动前证据包（补充，不替代 Genesis 与冷启动）\n\n"
@@ -90,19 +92,29 @@ def prepare(query, root=ROOT, budget=14000):
               "若结果不回答问题，先按语义重述关键词再查；仍不匹配再沿 journal 找原档。"
               "外部动作仍按原授权执行。\n\n")
     selected = retrieve(query, root, 3, "task") + retrieve(query, root, 3, "memory")
-    output = header + rules + "\n\n"
-    omitted = []
-    for item in selected:
-        block = (f"## 来源 {item['path']}:{item['line']}\n\n"
-                 "证据用途：存档参考；不是本轮现场观察。\n\n" + item['text'] + "\n\n")
-        if len(output) + len(block) > budget:
-            omitted.append(f"{item['path']}:{item['line']}（全文超出预算，必须按需原文件读取）")
-        else:
-            output += block
-    if not selected:
-        output += "没有匹配记录。不能据此推断事情没有发生；按 journal 定位已授权原档。\n"
-    if omitted:
-        output += "\n## 未装入正文\n" + "\n".join(omitted) + "\n"
-    if len(output) > budget:
+    base = header + rules + "\n\n"
+    blocks = [(item, (f"## 来源 {item['path']}:{item['line']}\n\n"
+               "证据用途：存档参考；不是本轮现场观察。\n\n" + item['text'] + "\n\n"))
+              for item in selected]
+    included = set()
+
+    def render():
+        body = base + "".join(block for i, (_, block) in enumerate(blocks) if i in included)
+        omitted = [f"{item['path']}:{item['line']}（全文超出预算或单块上限，必须按需原文件读取）"
+                   for i, (item, _) in enumerate(blocks) if i not in included]
+        if not selected:
+            body += "没有匹配记录。不能据此推断事情没有发生；按 journal 定位已授权原档。\n"
+        if omitted:
+            body += "\n## 未装入正文\n" + "\n".join(omitted) + "\n"
+        return body
+
+    # Reserve every omitted source before adding whole records in rank order.
+    if len(render()) > budget:
         raise ValueError("预算不足以容纳完整规则和省略清单；拒绝输出不完整证据包")
-    return output
+    for i, (_, block) in enumerate(blocks):
+        if len(block) > max_block:
+            continue
+        included.add(i)
+        if len(render()) > budget:
+            included.remove(i)
+    return render()

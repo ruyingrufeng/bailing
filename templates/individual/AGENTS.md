@@ -1,4 +1,6 @@
 # Shared runtime contract
+Read state/SELF_MODEL.md first when present; it is only a summary.
+Then read the canonical sources below. Missing summaries in older workspaces are allowed.
 Read GENESIS.md, core/CONSTITUTION.md, state/STATE.md, state/BEHAVIOR_RULES.md,
 tasks/ACTIVE.md, memory/index.md and relevant entries/recent journal,
 experience/EXPERIENCE_LEDGER.md, identity/IDENTITY_LEDGER.md,

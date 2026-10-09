@@ -1,5 +1,10 @@
 # Bailing
 
+## v0.3.0: Recovery reliability
+
+Adds an optional operational summary, character-budget controls and explicit optional-source read failures. Existing workspaces remain supported. See [recovery behavior and validation scope](docs/RECOVERY.md); configuration diagnostics are guidance only.
+
+
 **An open experiment in digital individuality, persistent memory, and continuity across runtimes.**
 
 [中文](README.md)

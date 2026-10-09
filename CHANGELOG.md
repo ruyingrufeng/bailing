@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — Recovery reliability
+
+- Add an optional operational self-model template and load it before canonical context.
+- Reserve omission references in prepare; expose character and per-block budgets.
+- Report optional context read failures while retaining fatal core/unsafe-path checks.
+- Document unknown-configuration diagnostics as design guidance only.
+- Add seven synthetic recovery regression tests.
+
 ## 0.2.0 — 找回历史
 
 - 新增只读 archive-search：日期、Runtime、会话过滤，来源行号与 JSON 输出。
