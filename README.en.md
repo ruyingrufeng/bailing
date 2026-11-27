@@ -1,5 +1,10 @@
 # Bailing
 
+## v0.4.0
+
+Explicit shared facts now support sourced corrections, budgeted snapshots and scoped forgetting. See [usage and limitations](docs/MEMORY.md).
+
+
 ## v0.3.0: Recovery reliability
 
 Adds an optional operational summary, character-budget controls and explicit optional-source read failures. Existing workspaces remain supported. See [recovery behavior and validation scope](docs/RECOVERY.md); configuration diagnostics are guidance only.

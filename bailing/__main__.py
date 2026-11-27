@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import shutil
+import sqlite3
+from .memory import update as update_fact, snapshot as fact_snapshot
 import sys
 from .retrieval import prepare, read_local
 from .archive import search as archive_search, render as render_archive
@@ -66,6 +68,15 @@ def main():
             cmd.add_argument("--max-block", type=int, default=6000)
         if command == "record":
             cmd.add_argument("summary")
+    mem = sub.add_parser("memory", help="Explicit local facts; no automatic capture")
+    mem.add_argument("action", choices=("snapshot", "search", "save", "forget"))
+    mem.add_argument("--root", type=Path, required=True)
+    mem.add_argument("--category", choices=("basic", "family", "preference", "topic"))
+    mem.add_argument("--key")
+    mem.add_argument("--value")
+    mem.add_argument("--source")
+    mem.add_argument("--query")
+    mem.add_argument("--budget", type=int, default=6000)
     archive = sub.add_parser("archive-search", help="Search user-supplied Markdown archives (read-only)")
     archive.add_argument("query")
     archive.add_argument("--root", type=Path, required=True)
@@ -92,7 +103,14 @@ def main():
             return
         root = args.root.resolve()
         validate(root)
-        if args.command == "archive-search":
+        if args.command == "memory":
+            if args.action in ("save", "forget"):
+                print(json.dumps(update_fact(root,args.action,args.category,args.key,args.value,args.source)))
+            else:
+                if args.action == "search" and not args.query:
+                    raise ValueError("Search requires --query")
+                print(fact_snapshot(root,args.budget,args.query if args.action == "search" else None))
+        elif args.command == "archive-search":
             result = archive_search(args.query, root, args.limit, args.runtime, args.since, args.until, args.session)
             print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else render_archive(result))
         elif args.command == "doctor":
@@ -112,7 +130,7 @@ def main():
             with file.open("a", encoding="utf-8") as stream:
                 stream.write(f"- {stamp.isoformat()} [{args.runtime}] {json.dumps(args.summary, ensure_ascii=False)}\n")
             print(file)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, sqlite3.Error) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 

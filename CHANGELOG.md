@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 — Explicit shared facts
+
+- Add local SQLite facts with explicit source and timestamp, correction and scoped forgetting.
+- Add character-budgeted snapshots with complete omission references and current-fact search.
+- Add seven synthetic regression tests; platform capture remains outside this release.
+
+
 ## 0.3.0 — Recovery reliability
 
 - Add an optional operational self-model template and load it before canonical context.
